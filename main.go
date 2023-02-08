@@ -9,19 +9,27 @@ import (
 const movieTickets = 30
 
 var remainingTickets uint = 30
-var bookings []string
+var bookings = make([]Customer, 0)
+
+type Customer struct {
+	firstName  string
+	lastName   string
+	phoneNumer uint
+	email      string
+	tickets    uint
+}
 
 func main() {
 	fmt.Println("\nWelcome to movie ticket booking app!")
 	fmt.Printf("We have total of %v tickets and %v are still available.\n", movieTickets, remainingTickets)
 
 	for {
-		firstName, lastName, phoneNumber, email, userTickets := userInput()
-		correctName, correctNumber, correctEmail, correctTickets := userVerivication(firstName, lastName, phoneNumber, email, userTickets)
+		firstName, lastName, phoneNumber, email, customerTickets := userInput()
+		correctName, correctNumber, correctEmail, correctTickets := userVerivication(firstName, lastName, phoneNumber, email, customerTickets)
 
 		if correctName && correctNumber && correctEmail && correctTickets {
-			listOfSoldTickets := buyTicket(userTickets, firstName, lastName, phoneNumber, email)
-			buyerNames(listOfSoldTickets)
+			buyTicket(customerTickets, firstName, lastName, phoneNumber, email)
+			buyerNames()
 
 			if remainingTickets == 0 {
 				fmt.Println("We're sorry, tickets are all sold out.")
@@ -50,7 +58,7 @@ func userInput() (string, string, uint, string, uint) {
 	var lastName string
 	var phoneNumber uint
 	var email string
-	var userTickets uint
+	var customerTickets uint
 
 	fmt.Print("\nEnter your first name: ")
 	fmt.Scan(&firstName)
@@ -65,32 +73,39 @@ func userInput() (string, string, uint, string, uint) {
 	fmt.Scan(&email)
 
 	fmt.Print("Enter number of tickets: ")
-	fmt.Scan(&userTickets)
-	return firstName, lastName, phoneNumber, email, userTickets
+	fmt.Scan(&customerTickets)
+	return firstName, lastName, phoneNumber, email, customerTickets
 }
 
-func userVerivication(firstName string, lastName string, phoneNumber uint, email string, userTickets uint) (bool, bool, bool, bool) {
+func userVerivication(firstName string, lastName string, phoneNumber uint, email string, customerTickets uint) (bool, bool, bool, bool) {
 	correctName := len(firstName) >= 2 && len(lastName) >= 2
 	correctNumber := len(strconv.Itoa(int(phoneNumber))) > 5
 	correctEmail := strings.Contains(email, "@")
-	correctTickets := userTickets > 0 && userTickets <= remainingTickets
+	correctTickets := customerTickets > 0 && customerTickets <= remainingTickets
 	return correctName, correctNumber, correctEmail, correctTickets
 }
 
-func buyTicket(userTickets uint, firstName string, lastName string, phoneNumber uint, email string) []string {
-	remainingTickets = remainingTickets - userTickets
+func buyTicket(customerTickets uint, firstName string, lastName string, phoneNumber uint, email string) {
+	remainingTickets = remainingTickets - customerTickets
 
-	bookings = append(bookings, firstName+" "+lastName)
+	customerData := Customer{
+		firstName:  firstName,
+		lastName:   lastName,
+		phoneNumer: phoneNumber,
+		email:      email,
+		tickets:    customerTickets,
+	}
 
-	fmt.Printf("%v %v, thank you for buying tickets! Wait for confirmation of the purchase of %v tickets to your phone %v and email adress %v", firstName, lastName, userTickets, phoneNumber, email)
+	bookings = append(bookings, customerData)
+	fmt.Printf("Data list: %v", bookings)
+
+	fmt.Printf("\n%v %v, thank you for buying tickets! Wait for confirmation of the purchase of %v tickets to your phone %v and email adress %v", firstName, lastName, customerTickets, phoneNumber, email)
 	fmt.Printf("\n%v tickets are available for purchase.", remainingTickets)
-	return bookings
 }
-func buyerNames(bookings []string) {
+func buyerNames() {
 	buyerNames := []string{}
 	for _, booking := range bookings {
-		var names = strings.Fields(booking)
-		buyerNames = append(buyerNames, names[0])
+		buyerNames = append(buyerNames, booking.firstName)
 	}
 	fmt.Printf("\nList of buyers: %v\n", buyerNames)
 }
